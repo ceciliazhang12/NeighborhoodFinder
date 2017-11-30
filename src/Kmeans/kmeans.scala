@@ -22,9 +22,7 @@ object Kmeans {
       x.getDouble(5),
       x.getDouble(6),
       x.getDouble(7))).cache()
-
-    //val data = sc.textFile("data/mllib/kmeans_data.txt")
-    //val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).cache()
+    
 
     // Cluster the data into two classes using KMeans
     val numClusters = 1000
@@ -35,6 +33,13 @@ object Kmeans {
     val WSSSE = clusters.computeCost(rdd)
     println("Within Set Sum of Squared Errors = " + WSSSE)
 
+    // get prediction
+    val predictions = datas.rdd.map{r =>(r.getInt(0), r.getString(1), r.getString(2), r.getString(3),
+      clusters.predict(Vectors.dense(r.getDouble(4), r.getDouble(5), r.getDouble(6),r.getDouble(7), r.getDouble(8),r.getDouble(9), r.getDouble(10),r.getDouble(11))))}
+
+    val predDF = predictions.toDF("RegionName","City", "State", "CountyName", "Cluster");
+
+    predDF.write.save("project/data/output/Cluster")
     // Save and load model
     clusters.save(sc, "project/data/output/KMeansModel")
     val sameModel = KMeansModel.load(sc, "project/data/output/KMeansModel")
