@@ -45,6 +45,7 @@ Then, to run these two spark application, please use the following command:
 
 ### Derive K-means clustering model:
 Now that we have the final dataframe we have, we can get the model by training it in spark. 
+
 `src\Kmeans` is the main directory with a script named kmeans.scala performing clustering and prediction.
 
 Simply run the kmeans.scala file in the following way, which would output model into the directory:
