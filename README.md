@@ -28,12 +28,15 @@ We have three raw datasets as following:
 - the United States crime rate dataset (https://www.kaggle.com/mikejohnsonjr/united-states-crime-rates-by-county/data)
 - demographic datasets (https://www2.census.gov/programs-surveys/popest/datasets/2010-2016/counties/asrh/)
 - house-renting price dataset (https://www.zillow.com/research/data/) 
+
 For further use, we need to join the three datasets into one data frame. 
+
 `src/JoinData` is the main directory with two scala scripts performing data joining. 
   * join.scala combines the crime rate data and house-renting price dataset.
   * join2.scala combines intermediate dataset and demographic dataset.
   
 Use `sbt package` to package these two scala scripts into JAR files respectively
+
 Then, to run these two spark application, please use the following command:
 
 `spark-submit --master yarn-cluster --class join join.jar [fileURL]`
