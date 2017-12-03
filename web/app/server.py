@@ -33,8 +33,8 @@ import logging
 from flask import Flask, jsonify, request, json, url_for, make_response, abort
 from flask_api import status  # HTTP Status Codes
 from werkzeug.exceptions import NotFound
-from models import Inventory, DataValidationError
 from . import app
+from models import Inventory
 
 # Error handlers reuire app to be initialized so we must import
 # then only after we have initialized the Flask app instance
@@ -42,12 +42,6 @@ from . import app
 ######################################################################
 # Error Handlers
 ######################################################################
-@app.errorhandler(DataValidationError)
-def request_validation_error(error):
-    """ Handles Value Errors from bad data """
-    return bad_request(error)
-
-
 @app.errorhandler(400)
 def bad_request(error):
     """ Handles bad requests with 400_BAD_REQUEST """
@@ -135,10 +129,10 @@ def get_inventories(inventory_id):
 
     This endpoint will return a Inventory based on it's id
     """
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
-        raise NotFound("Inventory with id '{}' was not found.".format(inventory_id))
-    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    # inventory = Inventory.find(inventory_id)
+    # if not inventory:
+    #     raise NotFound("Inventory with id '{}' was not found.".format(inventory_id))
+    # return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
