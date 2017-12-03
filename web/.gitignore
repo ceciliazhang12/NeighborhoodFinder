@@ -1,0 +1,19 @@
+# Compiled source #
+###################
+*.class
+*.pyc
+
+
+# Packages #
+############
+*.jar
+
+# Logs and databases #
+######################
+*.log
+
+# OS generated files #
+######################
+.DS_Store
+*.db
+venv/
