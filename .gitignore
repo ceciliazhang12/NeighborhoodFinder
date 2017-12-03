@@ -1,3 +1,20 @@
+# Compiled source #
+###################
 *.class
+*.pyc
+
+
+# Packages #
+############
+*.jar
+
+# Logs and databases #
+######################
 *.log
-*.idea
+
+# OS generated files #
+######################
+.DS_Store
+*.db
+.idea/
+venv/
