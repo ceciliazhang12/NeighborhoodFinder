@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Inventory Demo RESTful Service</title>
+    <title>Your Personal Neighborhood Finder</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,85 +12,87 @@
   <body>
     <div class="container">
         <div class="page-header">
-            <h1>Inventory Demo REST API Service</h1>
+            <h1>Your Personal Neighborhood Finder</h1>
         </div>
 
         <!-- Flash Message -->
         <div class="table-responsive">
           <table class="table">
-            <tr><td>Status:</td><td><span id="flash_message"></span></td></tr>
+            <tr><td>A living area recommendation system based on big data analytics and clustering</td><td><span id="flash_message"></span></td></tr>
           </table>
         </div>
 
         <div class="col-md-12" id="form_data">
-          Create, Retrieve, Update, and Delete a Inventory:
+          Fill the questionnaire below and find out which area should you choose to live in:
           <div class="well">
             <div class="form-horizontal">
               <div class="form-group">
-                <label class="control-label col-sm-2" for="inventory_id">Inventory ID:</label>
-                <div class="col-sm-6">
-                  <input type="text" class="form-control" id="inventory_id" placeholder="Enter ID of Inventory">
-                </div>
-                <div class="col-sm-4">
-                  <button type="submit" class="btn btn-primary" id="retrieve-btn">Retrieve</button>
-                  <button type="submit" class="btn btn-danger" id="delete-btn">Delete</button>
+                <label class="control-label col-sm-2" for="inventory_id">Gender:</label>
+                <div class="col-sm-10">
+                  <select class="form-control" id="gender">
+                    <option value="male" selected>Male</option>
+                    <option value="female">Female</option>
+                  </select>
                 </div>
               </div>
             </div> <!-- form div -->
 
             <div class="form-horizontal">
               <div class="form-group">
-                <label class="control-label col-sm-2" for="inventory_name">Name:</label>
+                <label class="control-label col-sm-2" for="inventory_name">Sexual Orientation:</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="inventory_name" placeholder="Enter name for Inventory">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="inventory_quantity">Quantity:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="inventory_quantity" placeholder="Enter quantity for Inventory">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="inventory_status">Status:</label>
-                <div class="col-sm-10">
-                  <select class="form-control" id="inventory_status">
-                      <option value="new" selected>New</option>
-                      <option value="openBox">Open Box</option>
-                      <option value="used">Used</option>
+                  <select class="form-control" id="sexualOrientation">
+                    <option value="gay" selected>Gay</option>
+                    <option value="lesbian">Lesbian</option>
+                    <option value="straight">Straight</option>
+                    <option value="not-tell">I'd rather not tell</option>
                   </select>
                 </div>
               </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="inventory_quantity">Race:</label>
+                <div class="col-sm-10">
+                  <select class="form-control" id="race">
+                      <option value="white" selected>White</option>
+                      <option value="black">Black</option>
+                      <option value="asian">Asian</option>
+                      <option value="hispanic">Hispanic</option>option>
+                      <option value="other">Other</option>option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="age">Age:</label>
+                <div class="col-sm-10">
+                  <select class="form-control" id="age">
+                      <option value="youth" selected>Youth (under or equals to 20)</option>
+                      <option value="mid_age">Middle Age (under or equals to 50)</option>
+                      <option value="senior">Senior (older than 50)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="eco">Excepted development of local economics:</label>
+                <div class="col-sm-10">
+                  <input id="eco" data-slider-id='ecoSlider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="100"/>
+                </div>
+              </div>
+
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                  <button type="submit" class="btn btn-primary" id="list-btn">List</button>
-                  <button type="submit" class="btn btn-primary" id="query-btn">Query</button>
-                  <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
-                  <button type="submit" class="btn btn-primary" id="clear-btn">Clear</button>
-                  <button type="submit" class="btn btn-success" id="create-btn">Create</button>
-                  <button type="submit" class="btn btn-warning" id="update-btn">Update</button>
+                  <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
                 </div>
               </div>
           </div> <!-- form div -->
         </div>
 
-        <!-- Search Results -->
-        <div class="table-responsive col-md-12" id="search_results">
-          <table class="table-striped">
-            <thead>
-            <tr>
-                <th class="col-md-1">ID</th>
-                <th class="col-md-4">Name</th>
-                <th class="col-md-4">Quantity</th>
-                <th class="col-md-3">Status</th>
-            </tr>
-            </thead>
-          </table>
-        </div>
 
         <footer>
           <br><br>
-          <p>&copy; NYU DevOps Company 2017</p>
+          <p>&copy; NYU Big Data Application Development 2017</p>
         </footer>
         </div><!--/span-->
      </div><!--/row-->

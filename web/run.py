@@ -1,7 +1,7 @@
 """
-Inventory Service Runner
+Web Service Runner
 
-Start the Inventory Service and initializes logging
+Start the Web Service and initializes logging
 """
 
 import os
@@ -16,7 +16,7 @@ PORT = os.getenv('PORT', '5000')
 ######################################################################
 if __name__ == "__main__":
     print "****************************************"
-    print " Inventory   S E R V I C E   R U N N I N G"
+    print " W E B   S E R V I C E   R U N N I N G"
     print "****************************************"
     server.initialize_logging()
     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
