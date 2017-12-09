@@ -8,10 +8,10 @@ from pyspark.sql import SQLContext
 sc = SparkContext()
 sqlContext = SQLContext(sc)
 
-def getCluster(price, crime, male, female, white, black, asian, hispanic):
+def getCluster(price, crime, male, female, white, black, asian, hispanic, young, mid_age, senior):
     KModel = KMeansModel.load(sc, "project/data/output/KMeansModel");
-    cluster = KModel.predict([price, crime, male, female, white, black, asian, hispanic])
+    cluster = KModel.predict([price, crime, male, female, white, black, asian, hispanic, young, mid_age, senior])
     return cluster
 
 if __name__ == '__main__':
-    print(getCluster(2000,22,1,0,0,0,1,0))
+    print(getCluster(2000,22,1,0,0,0,1,0,1,0,0))
