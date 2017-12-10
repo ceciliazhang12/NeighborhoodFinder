@@ -98,7 +98,7 @@ def internal_server_error(error):
 @app.route('/', methods=['GET'])
 def index():
     """ Root URL response """
-    return app.send_static_file('index.html')
+    return render_template('index.html')
 
 ######################################################################
 # Create a feed through user completing questionnaire
@@ -210,9 +210,7 @@ def complete_questionnaire():
     # price features
     feed['price'] = price
 
-    address_to_lati_long('the united states')
-
-    cluster_id = getCluster(feed)
+    cluster_id = get_cluster(feed)
     return redirect(url_for('get_recommendations', cluster_id = cluster_id))
 
 
@@ -226,7 +224,7 @@ def get_recommendations(cluster_id):
     for county in counties:
         location = address_to_lati_long(county)
         locations.append(location)
-    return render_template('recommendations.html', cluster_id = cluster_id, locations = locations)
+    return render_template('recommendations.html', locations = locations)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
@@ -235,9 +233,9 @@ def address_to_lati_long(address):
     data = json.loads(urllib.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=' + str(address) + '&key=AIzaSyBNOG0EbjYAG9weMpudHnzsV9hp1eeb9Ss').read())
     latitude = data['results'][0]['geometry']['location']['lat']
     longitude = data['results'][0]['geometry']['location']['lng']
-    return (latitude, longitude)
+    return [latitude, longitude]
 
-def getCluster(feed):
+def get_cluster(feed):
     price = feed['price']
     crime = feed['crime']
     male = feed['male']
