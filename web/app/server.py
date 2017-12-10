@@ -1,4 +1,4 @@
-# Copyright 2017 NYU-FOXTROT. All Rights Reserved.
+# Copyright 2017 NYU Big Data Application Development. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,13 @@
 # limitations under the License.
 
 """
-Inventory Store Service
+Your Personal Neighborhood Service
 
 Paths:
 ------
-GET / - Displays a UI for Selenium testing
-GET /inventories - returns a list all of the Inventories
-GET /inventories/{id} - returns the Inventory with a given id number
-POST /inventories - creates a new Inventory record in the database
-PUT /inventories/{id} - updates a Inventory record in the database
-DELETE /inventories/{id} - deletes a Inventory record in the database
-GET /inventories/count - returns total amount of product with given name/id/status(whatever status)
-GET /inventories/query - returns the inventory record based on the query string (name and status)
+GET / - Displays the index page for the neighborhood service
+POST /questionnaire - User fill in the questionnaire form and send the input data to the backend
+GET /recommendations/{cluster_id} - returns recommendations of locations in the specified cluster
 """
 
 import os
@@ -34,9 +29,15 @@ from flask import Flask, jsonify, request, json, url_for, make_response, abort
 from flask_api import status  # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 from . import app
-from models import Inventory
 
-# Error handlers reuire app to be initialized so we must import
+import pyspark
+from numpy import array
+from math import sqrt
+from pyspark.mllib.clustering import KMeans, KMeansModel
+from pyspark.sql import SQLContext
+import pickle
+
+# Error handlers require app to be initialized so we must import
 # then only after we have initialized the Flask app instance
 
 ######################################################################
@@ -85,175 +86,150 @@ def internal_server_error(error):
 ######################################################################
 # GET INDEX
 ######################################################################
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     """ Root URL response """
     return app.send_static_file('index.html')
-    # return jsonify(name='Inventory Demo REST API Service',
-    #                version='1.0',
-    #                paths=url_for('list_inventories', _external=True)
-    #                ), status.HTTP_200_OK
-
 
 ######################################################################
-# LIST ALL INVENTORIES
+# Create a feed through user completing questionnaire
 ######################################################################
-@app.route('/inventories', methods=['GET'])
-def list_inventories():
-    """ Returns all of the Inventories """
-    inventories = []
-    quantity = request.args.get('quantity')
-    status = request.args.get('status')
-    name = request.args.get('name')
-    if quantity:
-        q = int(quantity)
-        inventories = Inventory.find_by_quantity(q)
-    elif status:
-        inventories = Inventory.find_by_status(status)
-    elif name:
-        inventories = Inventory.find_by_name(name)
+@app.route('/questionnaire', methods=['POST'])
+def complete_questionnaire():
+    generder = str(request.args.get('generder'))
+    sexOri = str(request.args.get['sexualOrientation'])
+    race = str(request.args.get['race'])
+    age = str(request.args.get['age'])
+    crime = str(request.args.get['crime'])
+    price = int(request.args.get['eco'])
+
+    # store input feed to the model which is converted from userInput
+    feed = {}
+
+    # demographic:
+    female_min = 0.28
+    female_max = 0.57
+    male_min = 0.43
+    male_max = 0.72
+    if generder == 'male':
+        if sexOri == 'straight' or 'lesbian':
+            feed['female'] = female_max
+            feed['male'] = male_min
+        elif sexOri == 'gay':
+            feed['female'] = female_min
+            feed['male'] = male_max
+        else:
+            feed['female'] = 0.5
+            feed['male'] = 0.5
+    elif generder == 'female':
+        if sexOri == 'straight' or 'gay':
+            feed['female'] = female_min
+            feed['male'] = male_max
+        elif sexOri == 'lesbian':
+            feed['female'] = female_max
+            feed['male'] = female_min
+        else:
+            feed['female'] = 0.5
+            feed['male'] = 0.5
     else:
-        inventories = Inventory.all()
+        feed['female'] = 0.5
+        feed['male'] = 0.5
 
-    results = [inventory.serialize() for inventory in inventories]
-    return make_response(jsonify(results))
+    # race features:
+    if race == 'white':
+        feed['white'] = 0.85
+        feed['black'] = 0.05
+        feed['asian'] = 0.05
+        feed['hispanic'] = 0.05
+    elif race == 'asian':
+        feed['asian'] = 0.15
+        feed['white'] = 0.5
+        feed['black'] = 0.05
+        feed['hispanic'] = 0.05
+    elif race == 'black':
+        feed['black'] = 0.4
+        feed['white'] = 0.5
+        feed['asian'] = 0.05
+        feed['hispanic'] = 0.05
+    elif race == 'hispanic':
+        feed['hispanic'] = 0.4
+        feed['white'] = 0.5
+        feed['asian'] = 0.05
+        feed['black'] = 0.05
+    else:
+        feed['white'] = 0.2
+        feed['asian'] = 0.2
+        feed['black'] = 0.2
+        feed['hispanic'] = 0.2
 
+    # age features
+    if age == 'young':
+        feed['young'] = 0.65
+        feed['mid'] = 0.15
+        feed['senior'] = 0.15
+    elif age == 'mid':
+        feed['young'] = 0.5
+        feed['mid'] = 0.25
+        feed['senior'] = 0.15
+    elif age == 'senior':
+        feed['young'] = 0.5
+        feed['mid'] = 0.15
+        feed['senior'] = 0.28
+    else:
+        feed['young'] = 0.5
+        feed['mid'] = 0.2
+        feed['senior'] = 0.2
 
-######################################################################
-# READ AN INVENTORY
-######################################################################
-@app.route('/inventories/<int:inventory_id>', methods=['GET'])
-def get_inventories(inventory_id):
-    """
-    Retrieve a single Inventory
+    # crime features
+    if crime == 'low':
+        feed['crime'] = 4
+    elif crime == 'midiumlow':
+        feed['crime'] = 450
+    elif crime == 'midium':
+        feed['crime'] = 895
+    elif crime == 'midiumhigh':
+        feed['crime'] = 1340
+    elif crime == 'high':
+        feed['crime'] = 1791
 
-    This endpoint will return a Inventory based on it's id
-    """
-    # inventory = Inventory.find(inventory_id)
-    # if not inventory:
-    #     raise NotFound("Inventory with id '{}' was not found.".format(inventory_id))
-    # return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    # price features
+    feed['price'] = price
 
-
-######################################################################
-# CREATE AN INVENTORY
-######################################################################
-@app.route('/inventories', methods=['POST'])
-def create_inventories():
-    """
-    Creates a Inventory
-    This endpoint will create a Inventory based the data in the body that is posted
-    """
-    inventory = Inventory()
-    inventory.deserialize(request.get_json())
-    inventory.save()
-    message = inventory.serialize()
-    location_url = url_for('get_inventories', inventory_id=inventory.id, _external=True)
-    return make_response(jsonify(message), status.HTTP_201_CREATED,
-                         {
-                             'Location': location_url
-                         })
-
-
-######################################################################
-# UPDATE AN EXISTING INVENTORY
-######################################################################
-@app.route('/inventories/<int:inventory_id>', methods=['PUT'])
-def update_inventories(inventory_id):
-    """
-    Update a Inventory
-
-    This endpoint will update a Inventory based the body that is posted
-    """
-    check_content_type('application/json')
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
-        raise NotFound("Inventory with id '{}' was not found.".format(inventory_id))
-    inventory.deserialize(request.get_json())
-    inventory.id = inventory_id
-    inventory.save()
-    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
-
-
-######################################################################
-# DELETE A INVENTORY
-######################################################################
-@app.route('/inventories/<int:inventory_id>', methods=['DELETE'])
-def delete_inventories(inventory_id):
-    """
-    Delete a Inventory
-
-    This endpoint will delete a Inventory based the id specified in the path
-    """
-    inventory = Inventory.find(inventory_id)
-    if inventory:
-        inventory.delete()
-    return make_response('', status.HTTP_204_NO_CONTENT)
+    cluster_id = getCluster(feed)
+    app.redirect('/recommendations/' + cluster_id, code=302)
 
 
 ######################################################################
-# COUNT TOTAL QUANTITY OF PRODUCT WITH GIVEN NAME
+# Get All Recommendations for the User
 ######################################################################
-@app.route('/inventories/count', methods=['GET'])
-def count_inventories_quantity():
-    # return a list of Inventory
-    name = request.args.get('name')
-    if name:
-        find_by_id_records = Inventory.find_by_name(name)
-        quantities = [record.quantity for record in find_by_id_records]
-        quantity_sum = sum(quantities)
-        message = {'count': quantity_sum}
-    return make_response(jsonify(message), status.HTTP_200_OK)
+@app.route('/recommendations/<int:cluster_id>', methods=['GET'])
+def get_recommendations(cluster_id):
 
 
-######################################################################
-# QUERY INVENTORIES
-######################################################################
-@app.route('/inventories/query', methods=['GET'])
-def query_inventories_by_name_status():
-    name = request.args.get('name')
-    status = request.args.get('status')
-
-
-    # query by name and status
-    inventories_by_name = Inventory.find_by_name(name)
-    inventories_by_status = Inventory.find_by_status(status)
-    if not inventories_by_status or not inventories_by_name:
-        raise NotFound("Query Inventory with name '{}' and status '{}'  was not found.".format(name, status))
-    results1 = [inventory.serialize() for inventory in inventories_by_name]
-    results2 = [inventory.serialize() for inventory in inventories_by_status]
-    results = [r for r in results1 if r in results2]
-    return make_response(jsonify(results))
-
-######################################################################
-# DELETE ALL PET DATA (for testing only)
-######################################################################
-@app.route('/inventories/reset', methods=['DELETE'])
-def inventories_reset():
-    """ Removes all inventories from the database """
-    Inventory.remove_all()
-    return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-"""
-@app.before_first_request
-def init_db(redis=None):
-    Inventory.init_db(redis)
-"""
 
+def getCluster(feed):
+    sc = SparkContext()
+    sqlContext = SQLContext(sc)
 
-# load sample data
-def data_load(payload):
-    """ Loads an Inventory into the database """
-    inventory = Inventory(0, payload['name'], payload['quantity'], payload['status'])
-    inventory.save()
+    price = feed['price']
+    crime = feed['crime']
+    male = feed['male']
+    female = feed['female']
+    white = feed['white']
+    black = feed['black']
+    asian = feed['asian']
+    hispanic = feed['hispanic']
+    young = feed['young']
+    mid = feed['mid']
+    senior = feed['senior']
 
-
-def data_reset():
-    """ Removes all Inventories from the database """
-    Inventory.remove_all()
+    KModel = KMeansModel.load(sc, "project/data/output/KMeansModel");
+    cluster_id = KModel.predict(price, crime, male, female, white, black, asian, hispanic, young, mid, senior)
+    return cluster_id
 
 
 def check_content_type(content_type):
