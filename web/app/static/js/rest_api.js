@@ -1,5 +1,10 @@
 // TODO: Js code to get value from eco slider
 
+function showValue(newValue)
+{
+  document.getElementById("range").innerHTML=newValue;
+}
+/*
 $(function () {
     // ****************************************
     //  U T I L I T Y   F U N C T I O N S
@@ -319,3 +324,4 @@ $(function () {
     });
 
 })
+*/
