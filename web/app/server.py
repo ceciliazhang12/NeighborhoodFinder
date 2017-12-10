@@ -25,7 +25,7 @@ GET /recommendations/{cluster_id} - returns recommendations of locations in the 
 import os
 import sys
 import logging
-from flask import Flask, jsonify, request, json, url_for, make_response, abort
+from flask import Flask, jsonify, request, json, url_for, make_response, abort, redirect, render_template
 from flask_api import status  # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 from . import app
@@ -33,9 +33,18 @@ from . import app
 import pyspark
 from numpy import array
 from math import sqrt
+import pyspark
 from pyspark.mllib.clustering import KMeans, KMeansModel
 from pyspark.sql import SQLContext
+from pyspark import SparkContext, SparkConf
+conf = SparkConf().setAppName('appName').setMaster('local')
+sc = SparkContext()
+sqlContext = SQLContext(sc)
 import pickle
+import urllib
+import json
+
+
 
 # Error handlers require app to be initialized so we must import
 # then only after we have initialized the Flask app instance
@@ -96,12 +105,18 @@ def index():
 ######################################################################
 @app.route('/questionnaire', methods=['POST'])
 def complete_questionnaire():
-    generder = str(request.args.get('generder'))
-    sexOri = str(request.args.get['sexualOrientation'])
-    race = str(request.args.get['race'])
-    age = str(request.args.get['age'])
-    crime = str(request.args.get['crime'])
-    price = int(request.args.get['eco'])
+    gender = str(request.form['gender'])
+    print(gender)
+    sexOri = str(request.form['sexualOrientation'])
+    print(sexOri)
+    race = str(request.form['race'])
+    print(race)
+    age = str(request.form['age'])
+    print(age)
+    crime = str(request.form['crime'])
+    print(crime)
+    price = int(request.form['eco'])
+    print(price)
 
     # store input feed to the model which is converted from userInput
     feed = {}
@@ -111,7 +126,7 @@ def complete_questionnaire():
     female_max = 0.57
     male_min = 0.43
     male_max = 0.72
-    if generder == 'male':
+    if gender == 'male':
         if sexOri == 'straight' or 'lesbian':
             feed['female'] = female_max
             feed['male'] = male_min
@@ -121,7 +136,7 @@ def complete_questionnaire():
         else:
             feed['female'] = 0.5
             feed['male'] = 0.5
-    elif generder == 'female':
+    elif gender == 'female':
         if sexOri == 'straight' or 'gay':
             feed['female'] = female_min
             feed['male'] = male_max
@@ -195,8 +210,10 @@ def complete_questionnaire():
     # price features
     feed['price'] = price
 
+    address_to_lati_long('the united states')
+
     cluster_id = getCluster(feed)
-    app.redirect('/recommendations/' + cluster_id, code=302)
+    return redirect(url_for('get_recommendations', cluster_id = cluster_id))
 
 
 ######################################################################
@@ -204,17 +221,23 @@ def complete_questionnaire():
 ######################################################################
 @app.route('/recommendations/<int:cluster_id>', methods=['GET'])
 def get_recommendations(cluster_id):
-
-
+    counties = ['new york', 'brooklyn', 'queens', 'austin']
+    locations = []
+    for county in counties:
+        location = address_to_lati_long(county)
+        locations.append(location)
+    return render_template('recommendations.html', cluster_id = cluster_id, locations = locations)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+def address_to_lati_long(address):
+    data = json.loads(urllib.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=' + str(address) + '&key=AIzaSyBNOG0EbjYAG9weMpudHnzsV9hp1eeb9Ss').read())
+    latitude = data['results'][0]['geometry']['location']['lat']
+    longitude = data['results'][0]['geometry']['location']['lng']
+    return (latitude, longitude)
 
 def getCluster(feed):
-    sc = SparkContext()
-    sqlContext = SQLContext(sc)
-
     price = feed['price']
     crime = feed['crime']
     male = feed['male']
@@ -227,8 +250,9 @@ def getCluster(feed):
     mid = feed['mid']
     senior = feed['senior']
 
-    KModel = KMeansModel.load(sc, "project/data/output/KMeansModel");
-    cluster_id = KModel.predict(price, crime, male, female, white, black, asian, hispanic, young, mid, senior)
+    KModel = KMeansModel.load(sc, 'app/KMeansModel')
+    cluster_id = KModel.predict((array([price, crime, male, female, white, black, asian, hispanic])))
+    #new version: cluster_id = KModel.predict((array([price, crime, male, female, white, black, asian, hispanic, young, mid, senior])))
     return cluster_id
 
 
