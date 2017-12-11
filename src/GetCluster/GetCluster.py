@@ -20,6 +20,9 @@ def getDicFromPreDF() :
     dict = preDF.set_index('Cluster').to_dict('index')
     pickle.dump(dict, open("dict.p", "wb"))
 
+def getPicker()
+    dict = pickle.load( open("dict.p", "rb"))
+    return dict
 
 
 if __name__ == '__main__':
