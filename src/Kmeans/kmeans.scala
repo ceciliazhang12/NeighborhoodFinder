@@ -37,11 +37,14 @@ object Kmeans {
     println("Within Set Sum of Squared Errors = " + WSSSE)
 
     // get prediction
-    val predictions = datas.rdd.map{r =>(r.getInt(0), r.getString(1), r.getString(2), r.getString(3),
-      clusters.predict(Vectors.dense(r.getDouble(4), r.getDouble(5), r.getDouble(6),r.getDouble(7),
-        r.getDouble(8),r.getDouble(9), r.getDouble(10),r.getDouble(11), r.getDouble(12), r.getDouble(13), r.getDouble(14))))}
+    val predictions = datas.rdd.map{r =>(clusters.predict(Vectors.dense(r.getDouble(4), r.getDouble(5), r.getDouble(6),r.getDouble(7),
+      r.getDouble(8),r.getDouble(9), r.getDouble(10),r.getDouble(11), r.getDouble(12), r.getDouble(13), r.getDouble(14))),
+      r.getInt(0), r.getString(1), r.getString(2), r.getString(3), r.getDouble(4), r.getDouble(5), r.getDouble(6),r.getDouble(7),
+        r.getDouble(8),r.getDouble(9), r.getDouble(10),r.getDouble(11), r.getDouble(12), r.getDouble(13), r.getDouble(14)
+    )}
 
-    val predDF = predictions.toDF("RegionName","City", "State", "CountyName", "Cluster");
+    val predDF = predictions.toDF("Cluster","RegionName","City", "State", "CountyName",
+      "2017-09", "Crime_Rate_Per_100000", "male", "female", "white", "black", "asian", "hispanic", "young", "mid_age", "senior");
 
     predDF.write.save("project/data/output/Cluster")
     // Save and load model
