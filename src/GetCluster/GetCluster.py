@@ -16,8 +16,13 @@ def getCluster(price, crime, male, female, white, black, asian, hispanic, young,
     return cluster
 
 def getDicFromPreDF() :
-    preDF = sqlContext.read.parquet("project/data/output/Cluster")
-    dict = preDF.set_index('Cluster').to_dict('index')
+    preDF = sqlContext.read.parquet("project/data/output/Cluster").toPandas()
+    dict = {}
+    for x in range(len(preDF)):
+        id = preDF.iloc[x, 0]
+        value = preDF.iloc[x, 1:15]
+        dict = setdefault(id, [])
+        dict[id].append(value)
     pickle.dump(dict, open("dict.p", "wb"))
 
 def getPicker()
