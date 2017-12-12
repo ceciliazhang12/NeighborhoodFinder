@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Your Personal Neighborhood Finder</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--link rel="stylesheet" href="static/css/blue_bootstrap.min.css"-->
+    <link rel="stylesheet" href="static/css/webcss.css">
+    <script type="text/javascript" src = "static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="static/js/rest_api.js"></script>
+  </head>
+  <body>
+      <div class="form-style-5">
+        <form action="/questionnaire" method="post">
+        <fieldset>
+        <legend> Living area recommendation system</legend>
+
+        <span class="number">1</span><label for="gender">Gender:</label>
+        <select id="gender" name="gender">
+          <option value="refuse">Refuse to answer</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+
+        <span class="number">2</span><label for="sexualOrientation">Sexual Orientation:</label>
+        <select id="sexualOrientation" name="sexualOrientation">
+            <option value="refuse">Refuse to answer</option>
+            <option value="gay">Gay</option>
+            <option value="lesbian">Lesbian</option>
+            <option value="straight">Straight</option>
+        </select>
+
+        <span class="number">3</span><label for="race">Race:</label>
+        <select id="race" name="race">
+            <option value="refuse">Refuse to answer</option>
+            <option value="white">White</option>
+            <option value="black">Black</option>
+            <option value="asian">Asian</option>
+            <option value="hispanic">Hispanic</option>
+            <option value="other">Other</option>
+        </select>
+
+        <span class="number">4</span><label for="age">Age:</label>
+        <select id="age" name="age">
+            <option value="refuse">Refuse to answer</option>
+            <option value="youth">Youth (under or equals to 20)</option>
+            <option value="mid_age">Middle Age (under or equals to 50)</option>
+            <option value="senior">Senior (older than 50)</option>
+        </select>
+
+        <span class="number">5</span><label for="eco">Excepted development level of local economics(Scale 1 to 100):</label>
+        <div>
+          <input type="range" min="1" max="100" value="50" class="slider" id="eco" name = "eco" onchange="showValue(this.value)">
+          <span id="range">50</span>
+        </div>
+
+        <span class="number">6</span><label for="crime">Crime level:</label>
+        <select id="crime" name="crime">
+            <option value="low">Must be very safe</option>
+            <option value="mediumlow">Care a lot</option>
+            <option value="medium">Care</option>
+            <option value="mediumhigh">Care but not important</option>
+            <option value="high">Do not care at all</option>
+        </select>
+
+        </fieldset>
+        <input type="submit" value="Sumbit!"/>
+        </form>
+      </div>
+
+  </body>
+</html>
