@@ -44,10 +44,21 @@
 
       // Create markers.
       temp_locations.forEach(function (location) {
+          /*
+        var infowindow = new google.maps.InfoWindow({
+            content: location[2]
+        });
+        */
+
         var marker = new google.maps.Marker({
           position: { lat: location[0], lng: location[1] },
           map: map
         });
+        /*
+        marker.addListener('click', function() {
+            infowindow.open(map, marker);
+        });
+        */
       });
     }
   </script>
