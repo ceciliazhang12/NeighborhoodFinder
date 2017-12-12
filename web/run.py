@@ -9,7 +9,7 @@ from app import app, server
 
 # Pull options from environment
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
-PORT = os.getenv('PORT', '5000')
+PORT = os.getenv('PORT', '26292')
 
 ######################################################################
 #   M A I N

@@ -37,10 +37,12 @@ import pyspark
 from pyspark.mllib.clustering import KMeans, KMeansModel
 from pyspark.sql import SQLContext
 from pyspark import SparkContext, SparkConf
+import cPickle as pickle
 conf = SparkConf().setAppName('appName').setMaster('local')
 sc = SparkContext()
 sqlContext = SQLContext(sc)
-import pickle
+my_dict = pickle.load(open('app/dict.p', 'rb'))
+KModel = KMeansModel.load(sc, 'app/KMeansModel')
 import urllib
 import json
 
@@ -106,17 +108,11 @@ def index():
 @app.route('/questionnaire', methods=['POST'])
 def complete_questionnaire():
     gender = str(request.form['gender'])
-    print(gender)
     sexOri = str(request.form['sexualOrientation'])
-    print(sexOri)
     race = str(request.form['race'])
-    print(race)
     age = str(request.form['age'])
-    print(age)
     crime = str(request.form['crime'])
-    print(crime)
     price = int(request.form['eco'])
-    print(price)
 
     # store input feed to the model which is converted from userInput
     feed = {}
@@ -198,17 +194,17 @@ def complete_questionnaire():
     # crime features
     if crime == 'low':
         feed['crime'] = 4
-    elif crime == 'midiumlow':
+    elif crime == 'mediumlow':
         feed['crime'] = 450
-    elif crime == 'midium':
+    elif crime == 'medium':
         feed['crime'] = 895
-    elif crime == 'midiumhigh':
+    elif crime == 'mediumhigh':
         feed['crime'] = 1340
     elif crime == 'high':
         feed['crime'] = 1791
 
     # price features
-    feed['price'] = price
+    feed['price'] = (price / 100) * 2648 + 19.5
 
     cluster_id = get_cluster(feed)
     return redirect(url_for('get_recommendations', cluster_id = cluster_id))
@@ -219,10 +215,15 @@ def complete_questionnaire():
 ######################################################################
 @app.route('/recommendations/<int:cluster_id>', methods=['GET'])
 def get_recommendations(cluster_id):
-    counties = ['new york', 'brooklyn', 'queens', 'austin']
+    counties = []
+    for x in my_dict[cluster_id]:
+        # TODO for zipcode with heading 0s, zfill it
+        # counties.append(x['City'] + ', ' + x['CountyName'] + ', ' + x['State'] + ', ' + str(x['RegionName'))
+        counties.append(x['City'] + ', ' + x['CountyName'] + ', ' + x['State'])
     locations = []
     for county in counties:
         location = address_to_lati_long(county)
+        location["info"] = county.encode('utf-8')
         locations.append(location)
     return render_template('recommendations.html', locations = locations)
 
@@ -230,10 +231,13 @@ def get_recommendations(cluster_id):
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 def address_to_lati_long(address):
+    res = {}
     data = json.loads(urllib.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=' + str(address) + '&key=AIzaSyBNOG0EbjYAG9weMpudHnzsV9hp1eeb9Ss').read())
     latitude = data['results'][0]['geometry']['location']['lat']
     longitude = data['results'][0]['geometry']['location']['lng']
-    return [latitude, longitude]
+    res["lat"] = latitude
+    res["long"] = longitude
+    return res
 
 def get_cluster(feed):
     price = feed['price']
@@ -248,9 +252,8 @@ def get_cluster(feed):
     mid = feed['mid']
     senior = feed['senior']
 
-    KModel = KMeansModel.load(sc, 'app/KMeansModel')
-    cluster_id = KModel.predict((array([price, crime, male, female, white, black, asian, hispanic])))
-    #new version: cluster_id = KModel.predict((array([price, crime, male, female, white, black, asian, hispanic, young, mid, senior])))
+    #cluster_id = KModel.predict((array([price, crime, male, female, white, black, asian, hispanic])))
+    cluster_id = KModel.predict((array([price, crime, male, female, white, black, asian, hispanic, young, mid, senior])))
     return cluster_id
 
 

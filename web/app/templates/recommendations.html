@@ -29,25 +29,36 @@
   <div id="map"></div>
   <script>
     var map;
-    var temp_locations = JSON.parse('{{ locations }}');
+    var temp_locations = JSON.parse('{{ locations | tojson | safe }}');
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 5,
+        zoom: 4,
         center: new google.maps.LatLng(37.09024, -95.712891),
         mapTypeId: 'roadmap'
       });
 
       // to see if temp_locations are set properly
       temp_locations.forEach(function (location) {
-        console.log(location)
+        console.log(location);
       });
+
+      var infowindow = new google.maps.InfoWindow({});
 
       // Create markers.
       temp_locations.forEach(function (location) {
+
         var marker = new google.maps.Marker({
-          position: { lat: location[0], lng: location[1] },
+          position: { lat: parseFloat(location['lat']), lng: parseFloat(location['long']) },
           map: map
         });
+
+        google.maps.event.addListener(marker, 'click', (function (marker) {
+			return function () {
+				infowindow.setContent(location['info']);
+				infowindow.open(map, marker);
+			}
+		})(marker));
+
       });
     }
   </script>
