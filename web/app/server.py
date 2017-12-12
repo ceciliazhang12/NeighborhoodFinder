@@ -218,7 +218,8 @@ def get_recommendations(cluster_id):
     counties = []
     for x in my_dict[cluster_id]:
         # TODO for zipcode with heading 0s, zfill it
-        counties.append(x['City'] + ', ' + x['CountyName'] + ', ' + x['State'] + ', ' + str(x['RegionName']))
+        # counties.append(x['City'] + ', ' + x['CountyName'] + ', ' + x['State'] + ', ' + str(x['RegionName'))
+        counties.append(x['City'] + ', ' + x['CountyName'] + ', ' + x['State'])
     locations = []
     for county in counties:
         location = address_to_lati_long(county)
