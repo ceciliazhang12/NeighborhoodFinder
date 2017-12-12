@@ -15,7 +15,7 @@ def getCluster(price, crime, male, female, white, black, asian, hispanic, young,
     cluster = KModel.predict([price, crime, male, female, white, black, asian, hispanic, young, mid_age, senior])
     return cluster
 
-def getDicFromPreDF() :
+def getDicFromPreDF():
     preDF = sqlContext.read.parquet("project/data/output/Cluster").toPandas()
     dict = {}
     for x in range(len(preDF)):
@@ -25,8 +25,8 @@ def getDicFromPreDF() :
         dict[id].append(value)
     pickle.dump(dict, open("dict.p", "wb"))
 
-def getPicker()
-    dict = pickle.load( open("dict.p", "rb"))
+def getPicker():
+    dict = pickle.load(open("dict.p", "rb"))
     return dict
 
 
