@@ -108,17 +108,11 @@ def index():
 @app.route('/questionnaire', methods=['POST'])
 def complete_questionnaire():
     gender = str(request.form['gender'])
-    print(gender)
     sexOri = str(request.form['sexualOrientation'])
-    print(sexOri)
     race = str(request.form['race'])
-    print(race)
     age = str(request.form['age'])
-    print(age)
     crime = str(request.form['crime'])
-    print(crime)
     price = int(request.form['eco'])
-    print(price)
 
     # store input feed to the model which is converted from userInput
     feed = {}
@@ -223,13 +217,12 @@ def complete_questionnaire():
 def get_recommendations(cluster_id):
     counties = []
     for x in my_dict[cluster_id]:
-        counties.append(str(x['City']) + ' ' + x['CountyName'] + ' ' + x['State'] + ' ' + str(x['RegionName']))
-    print(counties)
-    #counties = ['new york', 'brooklyn', 'queens', 'austin']
+        # TODO for zipcode with heading 0s, zfill it
+        counties.append(x['City'] + ', ' + x['CountyName'] + ', ' + x['State'] + ', ' + str(x['RegionName']))
     locations = []
     for county in counties:
         location = address_to_lati_long(county)
-        location.append(county)
+        location["info"] = county.encode('utf-8')
         locations.append(location)
     return render_template('recommendations.html', locations = locations)
 
@@ -237,13 +230,15 @@ def get_recommendations(cluster_id):
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 def address_to_lati_long(address):
+    res = {}
     data = json.loads(urllib.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=' + str(address) + '&key=AIzaSyBNOG0EbjYAG9weMpudHnzsV9hp1eeb9Ss').read())
     latitude = data['results'][0]['geometry']['location']['lat']
     longitude = data['results'][0]['geometry']['location']['lng']
-    return [latitude, longitude]
+    res["lat"] = latitude
+    res["long"] = longitude
+    return res
 
 def get_cluster(feed):
-    print(feed)
     price = feed['price']
     crime = feed['crime']
     male = feed['male']

@@ -10,6 +10,7 @@ Jinja2==2.10
 jsonschema==2.6.0
 MarkupSafe==1.0
 numpy==1.13.3
+pandas==0.21.0
 py4j==0.10.4
 pyspark==2.2.0
 python-dateutil==2.6.1
