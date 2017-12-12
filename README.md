@@ -51,3 +51,6 @@ Now that we have the final dataframe we have, we can get the model by training i
 Simply run the kmeans.scala file in the following way, which would output model into the directory:
 
 `spark-submit --master yarn-cluster --class kmeans kmeans.jar [fileURL]`
+
+### Running on NYU Cluster:
+http://linserv2.cims.nyu.edu:26292
