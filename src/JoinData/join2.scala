@@ -23,7 +23,7 @@ object Join2 {
 
     val join_df = df_price.join(df_people, col("dfprice.CountyName") === col("dfpeople.county") && col("dfprice.State") === col("dfpeople.state"), "inner")
       .select("dfprice.RegionName", "dfprice.City", "dfprice.State", "dfprice.CountyName", "dfprice.2017-09", "dfprice.Crime_Rate_Per_100000",
-        "dfpeople.male", "dfpeople.female", "dfpeople.white", "dfpeople.black", "dfpeople.asian", "dfpeople.hispanic")
+        "dfpeople.male", "dfpeople.female", "dfpeople.white", "dfpeople.black", "dfpeople.asian", "dfpeople.hispanic", "dfpeople.young", "dfpeople.mid_age","dfpeople.senior")
 
 
     join_df.write.save("project/data/JoinedData2")
